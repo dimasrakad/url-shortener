@@ -2,6 +2,7 @@ package com.study.url_shortener.entities;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -25,6 +26,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "short_urls")
 @EntityListeners(AuditingEntityListener.class)
+@SQLDelete(sql = "UPDATE short_urls SET deleted_at = CURRENT_TIMESTAMP WHERE short_code = ?")
 public class ShortUrl {
     @Id
     @Column(name = "short_code", nullable = false)
@@ -50,4 +52,7 @@ public class ShortUrl {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }
