@@ -51,7 +51,7 @@ public class ShortUrlService {
                 ? request.getCustomCode()
                 : generateUniqueCode();
 
-        if (shortUrlRepository.existsById(shortCode)) {
+        if (shortUrlRepository.existsByShortCode(shortCode)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom code already exists");
         }
 
@@ -125,8 +125,8 @@ public class ShortUrlService {
     private String generateUniqueCode() {
         String code;
         do {
-            code = generateRandomAlphanumeric(7);
-        } while (shortUrlRepository.existsById(code));
+            code = generateRandomAlphanumeric(5);
+        } while (shortUrlRepository.existsByShortCode(code));
 
         return code;
     }

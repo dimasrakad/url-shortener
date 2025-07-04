@@ -22,8 +22,8 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-    @Value("${jwt.expiration}")
-    private Long EXPIRATION_TIME;
+    @Value("${jwt.access.expiration}")
+    private Long EXPIRATION_DAYS;
 
     private SecretKey key;
 
@@ -51,7 +51,7 @@ public class JwtUtil {
                 .claims(claims)
                 .subject(subject)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + (EXPIRATION_DAYS * 24 * 60 * 60 * 1000)))
                 .signWith(key)
                 .compact();
     }

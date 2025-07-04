@@ -8,26 +8,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.study.url_shortener.models.RefreshTokenRequest;
 import com.study.url_shortener.models.WebResponse;
 import com.study.url_shortener.models.user.AuthRequest;
 import com.study.url_shortener.models.user.AuthResponse;
+import com.study.url_shortener.services.RefreshTokenService;
 import com.study.url_shortener.services.UserService;
 import com.study.url_shortener.utils.JwtUtil;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserService userService;
-
-    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserService userService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.userService = userService;
-    }
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public WebResponse<AuthResponse> login(@RequestBody AuthRequest authRequest) {
@@ -41,10 +42,11 @@ public class AuthController {
         }
 
         UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
-        String jwt = jwtUtil.generateToken(userDetails);
+        String accessToken = jwtUtil.generateToken(userDetails);
+        String refreshToken = refreshTokenService.create(userDetails.getUsername());
 
         return WebResponse.<AuthResponse>builder()
-                .data(AuthResponse.builder().token(jwt).build()).build();
+                .data(userService.toAuthResponse(accessToken, refreshToken)).build();
     }
 
     @PostMapping("/register")
@@ -52,6 +54,13 @@ public class AuthController {
         userService.register(authRequest);
 
         return WebResponse.<String>builder().data(null).build();
+    }
+
+    @PostMapping("/refresh")
+    public WebResponse<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        AuthResponse response = userService.refreshAccessToken(request.getRefreshToken());
+
+        return WebResponse.<AuthResponse>builder().data(response).build();
     }
 
 }

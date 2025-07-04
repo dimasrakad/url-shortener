@@ -10,8 +10,9 @@ import com.study.url_shortener.entities.ShortUrl;
 import com.study.url_shortener.entities.User;
 
 @Repository
-public interface ShortUrlRepository extends JpaRepository<ShortUrl, String> {
+public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
     List<ShortUrl> findByUser(User user);
     Optional<ShortUrl> findByShortCodeAndDeletedAtIsNull(String shortCode);
     Optional<ShortUrl> findByShortCodeAndUser(String shortCode, User user);
+    boolean existsByShortCode(String shortCode);
 }

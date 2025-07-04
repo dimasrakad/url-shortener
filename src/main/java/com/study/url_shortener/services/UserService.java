@@ -1,33 +1,42 @@
 package com.study.url_shortener.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.study.url_shortener.entities.RefreshToken;
 import com.study.url_shortener.entities.User;
 import com.study.url_shortener.models.user.AuthRequest;
+import com.study.url_shortener.models.user.AuthResponse;
 import com.study.url_shortener.repositories.UserRepository;
+import com.study.url_shortener.utils.JwtUtil;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
-public class UserService implements UserDetailsService{
+@RequiredArgsConstructor
+public class UserService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
+    private final RefreshTokenService refreshTokenService;
+
+    private final JwtUtil jwtUtil;
 
     public UserDetails loadUserByUsername(String username) {
-        User user = userRepository.findById(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findById(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return new org.springframework.security.core.userdetails.User(
-            user.getUsername(),
-            user.getPassword(),
-            user.getAuthorities()
-        );
+                user.getUsername(),
+                user.getPassword(),
+                user.getAuthorities());
     }
 
     public void register(AuthRequest request) {
@@ -35,5 +44,21 @@ public class UserService implements UserDetailsService{
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
+    }
+
+    public AuthResponse refreshAccessToken(String refreshToken) {
+        RefreshToken token = refreshTokenService.verify(refreshToken)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
+
+        String newAccessToken = jwtUtil.generateToken(token.getUser());
+
+        return toAuthResponse(newAccessToken, refreshToken);
+    }
+
+    public AuthResponse toAuthResponse(String accessToken, String refreshToken) {
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }
