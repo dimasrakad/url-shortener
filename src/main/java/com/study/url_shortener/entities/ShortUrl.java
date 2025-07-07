@@ -28,7 +28,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "short_urls")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE short_urls SET deleted_at = CURRENT_TIMESTAMP WHERE short_code = ?")
+@SQLDelete(sql = "UPDATE short_urls SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class ShortUrl {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

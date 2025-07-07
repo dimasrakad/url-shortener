@@ -1,5 +1,8 @@
 package com.study.url_shortener.services;
 
+import java.time.ZoneId;
+import java.util.Date;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
+
+    private final BlacklistedTokenService blacklistedTokenService;
 
     private final UserRepository userRepository;
 
@@ -53,6 +58,18 @@ public class UserService implements UserDetailsService {
         String newAccessToken = jwtUtil.generateToken(token.getUser());
 
         return toAuthResponse(newAccessToken, refreshToken);
+    }
+
+    public void logout(String token) {
+        Date expiration = jwtUtil.extractExpiration(token);
+
+        blacklistedTokenService.add(token, expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+
+        String username = jwtUtil.extractUsername(token);
+
+        User user = userRepository.findById(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        refreshTokenService.deleteByUser(user);
     }
 
     public AuthResponse toAuthResponse(String accessToken, String refreshToken) {

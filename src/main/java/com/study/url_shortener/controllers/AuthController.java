@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -61,6 +63,13 @@ public class AuthController {
         AuthResponse response = userService.refreshAccessToken(request.getRefreshToken());
 
         return WebResponse.<AuthResponse>builder().data(response).build();
+    }
+
+    @GetMapping("/logout")
+    public void logout(@RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.replace("Bearer ", "");
+
+        userService.logout(token);
     }
 
 }

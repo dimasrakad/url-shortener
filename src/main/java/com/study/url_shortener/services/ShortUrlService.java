@@ -113,11 +113,12 @@ public class ShortUrlService {
     public void delete(String shortCode, Authentication authentication) {
         String username = authentication.getName();
 
-        User user = userRepository.findById(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         ShortUrl shortUrl = shortUrlRepository.findByShortCodeAndUser(shortCode, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Short URL not found"));
+                System.out.println(shortUrl.getShortCode());
 
         shortUrlRepository.delete(shortUrl);
     }

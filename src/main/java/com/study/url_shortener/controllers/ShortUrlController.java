@@ -12,6 +12,7 @@ import com.study.url_shortener.models.shorturl.CreateShortUrlRequest;
 import com.study.url_shortener.models.shorturl.ShortUrlResponse;
 import com.study.url_shortener.services.ShortUrlService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/url")
+@SecurityRequirement(name = "bearerAuth")
 public class ShortUrlController {
     @Autowired
     private ShortUrlService shortUrlService;

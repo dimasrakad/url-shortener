@@ -24,7 +24,7 @@ public class RefreshTokenService {
     private UserRepository userRepository;
 
     @Value("${jwt.refresh.expiration}")
-    private Long EXPIRATION_DAYS;
+    private Long expiration;
 
     public String create(String username) {
         User user = userRepository.findById(username)
@@ -40,7 +40,7 @@ public class RefreshTokenService {
         refreshToken = new RefreshToken();
         refreshToken.setToken(token);
         refreshToken.setUser(user);
-        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(EXPIRATION_DAYS));
+        refreshToken.setExpiryDate(LocalDateTime.now().plusSeconds(expiration/1000));
 
         refreshTokenRepository.save(refreshToken);
 
@@ -56,6 +56,10 @@ public class RefreshTokenService {
 
         refreshToken.ifPresent(refreshTokenRepository::delete);
         return Optional.empty();
+    }
+
+    public void deleteByUser(User user) {
+        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
     }
 
     private boolean isTokenExpired(RefreshToken refreshToken) {
