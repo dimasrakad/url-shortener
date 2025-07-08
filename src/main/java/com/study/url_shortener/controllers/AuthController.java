@@ -16,6 +16,8 @@ import com.study.url_shortener.services.RefreshTokenService;
 import com.study.url_shortener.services.UserService;
 import com.study.url_shortener.utils.JwtUtil;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,6 +68,7 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public void logout(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.replace("Bearer ", "");
 
