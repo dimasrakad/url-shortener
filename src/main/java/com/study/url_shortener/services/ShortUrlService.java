@@ -118,7 +118,6 @@ public class ShortUrlService {
 
         ShortUrl shortUrl = shortUrlRepository.findByShortCodeAndUser(shortCode, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Short URL not found"));
-                System.out.println(shortUrl.getShortCode());
 
         shortUrlRepository.delete(shortUrl);
     }
