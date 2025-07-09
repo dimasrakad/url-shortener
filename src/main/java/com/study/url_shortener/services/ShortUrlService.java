@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -17,8 +18,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.study.url_shortener.entities.ShortUrl;
 import com.study.url_shortener.entities.User;
+import com.study.url_shortener.enums.RoleEnum;
 import com.study.url_shortener.models.shorturl.CreateShortUrlRequest;
 import com.study.url_shortener.models.shorturl.ShortUrlResponse;
+import com.study.url_shortener.models.shorturl.ShortUrlResponse.ShortUrlResponseBuilder;
 import com.study.url_shortener.repositories.ShortUrlRepository;
 import com.study.url_shortener.repositories.UserRepository;
 
@@ -63,7 +66,7 @@ public class ShortUrlService {
 
         shortUrlRepository.save(shortUrl);
 
-        return toShortUrlResponse(shortUrl, httpServletRequest);
+        return toShortUrlResponse(shortUrl, httpServletRequest, user.getRole().getName());
     }
 
     public void incrementHitCount(String shortCode) {
@@ -95,7 +98,7 @@ public class ShortUrlService {
         ShortUrl shortUrl = shortUrlRepository.findByShortCodeAndUser(shortCode, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Short URL not found"));
 
-        return toShortUrlResponse(shortUrl, httpServletRequest);
+        return toShortUrlResponse(shortUrl, httpServletRequest, user.getRole().getName());
     }
 
     public List<ShortUrlResponse> getAll(Authentication authentication, HttpServletRequest httpServletRequest) {
@@ -104,9 +107,19 @@ public class ShortUrlService {
         User user = userRepository.findById(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        List<ShortUrl> shortUrls = shortUrlRepository.findByUser(user);
+        RoleEnum role = user.getRole().getName();
 
-        return shortUrls.stream().map(shortUrl -> toShortUrlResponse(shortUrl, httpServletRequest))
+        List<ShortUrl> shortUrls = new ArrayList<>();
+
+        if (role.equals(RoleEnum.USER)) {
+            shortUrls = shortUrlRepository.findByUser(user);
+        } else if (role.equals(RoleEnum.ADMIN)) {
+            shortUrls = shortUrlRepository.findAll();
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Forbidden");
+        }
+
+        return shortUrls.stream().map(shortUrl -> toShortUrlResponse(shortUrl, httpServletRequest, user.getRole().getName()))
                 .collect(Collectors.toList());
     }
 
@@ -131,16 +144,21 @@ public class ShortUrlService {
         return code;
     }
 
-    private ShortUrlResponse toShortUrlResponse(ShortUrl shortUrl, HttpServletRequest httpServletRequest) {
+    private ShortUrlResponse toShortUrlResponse(ShortUrl shortUrl, HttpServletRequest httpServletRequest, RoleEnum role) {
         String baseUrl = getBaseUrl(httpServletRequest);
 
-        return ShortUrlResponse.builder()
+        ShortUrlResponseBuilder shortUrlResponseBuilder = ShortUrlResponse.builder()
                 .shortUrl(baseUrl + shortUrl.getShortCode())
                 .originalUrl(shortUrl.getOriginalUrl())
                 .expiredAt(shortUrl.getExpiredAt().toString())
                 .hitCount(shortUrl.getHitCount())
-                .deletedAt(shortUrl.getDeletedAt() != null ? shortUrl.getDeletedAt().toString() : null)
-                .build();
+                .deletedAt(shortUrl.getDeletedAt() != null ? shortUrl.getDeletedAt().toString() : null);
+
+        if (role.equals(RoleEnum.ADMIN)) {
+            shortUrlResponseBuilder = shortUrlResponseBuilder.username(shortUrl.getUser().getUsername());
+        }
+
+        return shortUrlResponseBuilder.build();
     }
 
     private boolean isValidURL(String url) {

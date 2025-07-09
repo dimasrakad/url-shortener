@@ -48,6 +48,7 @@ public class UserService implements UserDetailsService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+
         userRepository.save(user);
     }
 
@@ -67,7 +68,8 @@ public class UserService implements UserDetailsService {
 
         String username = jwtUtil.extractUsername(token);
 
-        User user = userRepository.findById(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        User user = userRepository.findById(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         refreshTokenService.deleteByUser(user);
     }

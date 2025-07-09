@@ -15,4 +15,5 @@ public class ShortUrlResponse {
     private String expiredAt;
     private Integer hitCount;
     private String deletedAt;
+    private String username;
 }
