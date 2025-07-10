@@ -30,7 +30,7 @@ public class AdminSeeder implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        Role role = roleRepository.findByName(RoleEnum.ADMIN).orElse(null);
+        Role role = roleRepository.findByName(RoleEnum.ROLE_ADMIN).orElse(null);
 
         Map<String, String> users = new HashMap<>();
 

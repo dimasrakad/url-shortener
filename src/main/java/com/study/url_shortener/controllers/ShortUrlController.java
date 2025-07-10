@@ -3,6 +3,7 @@ package com.study.url_shortener.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,7 @@ public class ShortUrlController {
     @Autowired
     private ShortUrlService shortUrlService;
 
+    @PreAuthorize(value = "hasAnyRole('USER', 'ADMIN')")
     @PostMapping()
     public WebResponse<ShortUrlResponse> create(@RequestBody CreateShortUrlRequest request,
             Authentication authentication, HttpServletRequest httpServletRequest) {
@@ -38,6 +40,7 @@ public class ShortUrlController {
                 .build();
     }
 
+    @PreAuthorize(value = "hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/{shortCode}")
     public WebResponse<ShortUrlResponse> getByCode(@PathVariable String shortCode, Authentication authentication,
             HttpServletRequest httpServletRequest) {
@@ -48,16 +51,19 @@ public class ShortUrlController {
                 .build();
     }
 
+    @PreAuthorize(value = "hasAnyRole('USER', 'ADMIN')")
     @GetMapping()
     public WebResponse<List<ShortUrlResponse>> getAll(Authentication authentication,
             HttpServletRequest httpServletRequest) {
         List<ShortUrlResponse> responses = shortUrlService.getAll(authentication, httpServletRequest);
+        System.out.println(authentication.getAuthorities());
 
         return WebResponse.<List<ShortUrlResponse>>builder()
                 .data(responses)
                 .build();
     }
 
+    @PreAuthorize(value = "hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/{shortCode}")
     public WebResponse<String> delete(@PathVariable String shortCode, Authentication authentication) {
         shortUrlService.delete(shortCode, authentication);

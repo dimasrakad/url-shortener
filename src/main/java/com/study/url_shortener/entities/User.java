@@ -37,7 +37,7 @@ public class User implements UserDetails {
 
     @ManyToOne
     @JoinColumn(name = "role", referencedColumnName = "name", nullable = false)
-    private Role role = new Role(RoleEnum.USER);
+    private Role role = new Role(RoleEnum.ROLE_USER);
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

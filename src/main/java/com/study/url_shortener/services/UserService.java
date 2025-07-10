@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.study.url_shortener.entities.RefreshToken;
 import com.study.url_shortener.entities.User;
+import com.study.url_shortener.enums.RoleEnum;
 import com.study.url_shortener.models.user.AuthRequest;
 import com.study.url_shortener.models.user.AuthResponse;
 import com.study.url_shortener.repositories.UserRepository;
@@ -37,11 +38,14 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findById(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        
+        RoleEnum roleEnum = user.getRole().getName();
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.getAuthorities());
+        return org.springframework.security.core.userdetails.User
+            .withUsername(user.getUsername())
+            .password(user.getPassword())
+            .authorities(roleEnum.getAuthority())
+            .build();
     }
 
     public void register(AuthRequest request) {

@@ -111,9 +111,9 @@ public class ShortUrlService {
 
         List<ShortUrl> shortUrls = new ArrayList<>();
 
-        if (role.equals(RoleEnum.USER)) {
+        if (role.equals(RoleEnum.ROLE_USER)) {
             shortUrls = shortUrlRepository.findByUser(user);
-        } else if (role.equals(RoleEnum.ADMIN)) {
+        } else if (role.equals(RoleEnum.ROLE_ADMIN)) {
             shortUrls = shortUrlRepository.findAll();
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Forbidden");
@@ -154,7 +154,7 @@ public class ShortUrlService {
                 .hitCount(shortUrl.getHitCount())
                 .deletedAt(shortUrl.getDeletedAt() != null ? shortUrl.getDeletedAt().toString() : null);
 
-        if (role.equals(RoleEnum.ADMIN)) {
+        if (role.equals(RoleEnum.ROLE_ADMIN)) {
             shortUrlResponseBuilder = shortUrlResponseBuilder.username(shortUrl.getUser().getUsername());
         }
 

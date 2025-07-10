@@ -20,13 +20,13 @@ RESTful API sederhana untuk memendekkan URL menggunakan Spring Boot, Java 17, JW
 
 ## 🧩 Fitur Utama
 
-- Buat short URL dari input user
+- Membuat short URL dari input user
 - Redirect otomatis ke URL asli
-- Hitungan akses
+- Menghitung jumlah akses tiap short URL
 - Token JWT untuk autentikasi user
 - Blacklist token saat logout
 - Validasi custom path dan expiry date
-- Penghapusan otomatis token yang kadaluarsa
+- Delete otomatis token yang kadaluarsa
 
 ---
 
